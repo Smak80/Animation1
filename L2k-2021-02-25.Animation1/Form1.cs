@@ -28,5 +28,10 @@ namespace L2k_2021_02_25.Animation1
         {
             a.Stop();
         }
+
+        private void panel1_Resize(object sender, EventArgs e)
+        {
+            a.MainGraphics = panel1.CreateGraphics();
+        }
     }
 }

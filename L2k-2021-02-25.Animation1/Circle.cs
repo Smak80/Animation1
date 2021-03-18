@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using System.Threading;
 
 namespace L2k_2021_02_25.Animation1
 {
@@ -9,6 +10,28 @@ namespace L2k_2021_02_25.Animation1
     {
         private int size;
         private PointF pos;
+        private int Speed;
+        private Thread t;
+
+        public bool IsAlive
+        {
+            get => (t != null && t.IsAlive);
+        }
+
+        public bool Stop
+        {
+            get;
+            set;
+        }
+
+        public static bool StopAll
+        {
+            get;
+            set;
+        }
+
+        private int lifeTime;
+
 
         public float XPos
         {
@@ -77,6 +100,8 @@ namespace L2k_2021_02_25.Animation1
         public Circle()
         {
             size = r.Next(5, 100);
+            Speed = r.Next(5, 30);
+            lifeTime = r.Next(100, 800);
             var red = r.Next(255);
             var grn = r.Next(255);
             var blu = r.Next(255);
@@ -103,10 +128,30 @@ namespace L2k_2021_02_25.Animation1
             g.DrawEllipse(p, XPos, YPos, Size, Size);
         }
 
-        public void Move()
+        private void Move()
         {
             XPos += dx;
             YPos += dy;
+        }
+
+        public void Start()
+        {
+            Stop = false;
+            StopAll = false;
+            t = new Thread(
+                new ThreadStart(Run)
+            );
+            t.Start();
+        }
+
+        private void Run()
+        {
+            var it = 0;
+            while (!Stop && !StopAll && it++<lifeTime)
+            {
+                Move();
+                Thread.Sleep(Speed);
+            }
         }
 
     }

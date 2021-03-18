@@ -20,14 +20,15 @@ namespace L2k_2021_02_25.Animation1
             set
             {
                 mainG = value;
+                bg = BufferedGraphicsManager.Current.Allocate(
+                    MainGraphics, Rectangle.Round(mainG.VisibleClipBounds));
+                Circle.ContainerSize = mainG.VisibleClipBounds.Size.ToSize();
             }
         }
 
         public Animator(Graphics g)
         {
             MainGraphics = g;
-            bg = BufferedGraphicsManager.Current.Allocate(
-                MainGraphics, Rectangle.Round(g.VisibleClipBounds));
         }
 
         private List<Circle> circ = new List<Circle>();
@@ -39,27 +40,28 @@ namespace L2k_2021_02_25.Animation1
             AddNewCircle();
             if (t == null || !t.IsAlive)
             {
-                ThreadStart ts = new ThreadStart(Animate);
-                t = new Thread(ts);
+                t = new Thread(new ThreadStart(Animate));
                 t.Start();
             }
         }
 
         private void AddNewCircle()
         {
-            Circle.ContainerSize = MainGraphics.VisibleClipBounds.Size.ToSize();
-            circ.Add(new Circle());
+            var c = new Circle();
+            circ.Add(c);
+            c.Start();
         }
 
         private void Animate()
         {
-            for (int k = 0; k < 1000 && !stop; k++)
+            while (!stop)
             {
                 bg.Graphics.Clear(Color.White);
-                foreach (var circle in circ)
+                circ = circ.FindAll(it => it.IsAlive);
+                var cnt = circ.Count;
+                for (int i = 0; i<cnt; i++)
                 {
-                    circle.Paint(bg.Graphics);
-                    circle.Move();
+                    circ[i].Paint(bg.Graphics);
                 }
 
                 try
@@ -67,13 +69,14 @@ namespace L2k_2021_02_25.Animation1
                     bg.Render(MainGraphics);
                 } catch (Exception e) { }
 
-                Thread.Sleep(15);
+                Thread.Sleep(33);
             }
         }
 
         public void Stop()
         {
             stop = true;
+            Circle.StopAll = true;
         }
     }
 }

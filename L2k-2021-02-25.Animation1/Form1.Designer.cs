@@ -43,6 +43,7 @@ namespace L2k_2021_02_25.Animation1
             this.panel1.Size = new System.Drawing.Size(676, 565);
             this.panel1.TabIndex = 0;
             this.panel1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseClick);
+            this.panel1.Resize += new System.EventHandler(this.panel1_Resize);
             // 
             // Form1
             // 
