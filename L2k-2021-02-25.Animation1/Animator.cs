@@ -9,6 +9,10 @@ namespace L2k_2021_02_25.Animation1
     class Animator
     {
         private bool stop = false;
+        public bool IsAlive
+        {
+            get => (t != null && t.IsAlive);
+        }
 
         private Graphics mainG;
 
@@ -22,6 +26,10 @@ namespace L2k_2021_02_25.Animation1
                 mainG = value;
                 bg = BufferedGraphicsManager.Current.Allocate(
                     MainGraphics, Rectangle.Round(mainG.VisibleClipBounds));
+                Stop(true);
+                while (IsAlive) ;
+                bg.Graphics.Clear(Color.White);
+                Start(true);
                 Circle.ContainerSize = mainG.VisibleClipBounds.Size.ToSize();
             }
         }
@@ -34,10 +42,10 @@ namespace L2k_2021_02_25.Animation1
         private List<Circle> circ = new List<Circle>();
         private Thread t;
 
-        public void Start()
+        public void Start(bool continue_thread = false)
         {
             stop = false;
-            AddNewCircle();
+            if (!continue_thread) AddNewCircle();
             if (t == null || !t.IsAlive)
             {
                 t = new Thread(new ThreadStart(Animate));
@@ -73,10 +81,10 @@ namespace L2k_2021_02_25.Animation1
             }
         }
 
-        public void Stop()
+        public void Stop(bool just_pause = false)
         {
             stop = true;
-            Circle.StopAll = true;
+            if (!just_pause) Circle.StopAll = true;
         }
     }
 }
