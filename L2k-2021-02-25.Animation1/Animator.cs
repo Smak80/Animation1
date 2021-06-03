@@ -8,6 +8,10 @@ namespace L2k_2021_02_25.Animation1
 {
     class Animator
     {
+        class DblBuf
+        {
+            public BufferedGraphics bg;
+        }
         private bool stop = false;
         public bool IsAlive
         {
@@ -15,8 +19,7 @@ namespace L2k_2021_02_25.Animation1
         }
 
         private Graphics mainG;
-
-        private BufferedGraphics bg;
+        private DblBuf db = new DblBuf();
 
         public Graphics MainGraphics
         {
@@ -24,12 +27,14 @@ namespace L2k_2021_02_25.Animation1
             set
             {
                 mainG = value;
-                bg = BufferedGraphicsManager.Current.Allocate(
+                db.bg = BufferedGraphicsManager.Current.Allocate(
                     MainGraphics, Rectangle.Round(mainG.VisibleClipBounds));
-                Stop(true);
-                while (IsAlive) ;
-                bg.Graphics.Clear(Color.White);
-                Start(true);
+                //Stop(true);
+                //while (IsAlive) ;
+                Monitor.Enter(db);
+                db.bg.Graphics.Clear(Color.White);
+                Monitor.Exit(db);
+                //Start(true);
                 Circle.ContainerSize = mainG.VisibleClipBounds.Size.ToSize();
             }
         }
@@ -45,7 +50,8 @@ namespace L2k_2021_02_25.Animation1
         public void Start(bool continue_thread = false)
         {
             stop = false;
-            if (!continue_thread) AddNewCircle();
+            if (!continue_thread) 
+                AddNewCircle();
             if (t == null || !t.IsAlive)
             {
                 t = new Thread(new ThreadStart(Animate));
@@ -64,18 +70,19 @@ namespace L2k_2021_02_25.Animation1
         {
             while (!stop)
             {
-                bg.Graphics.Clear(Color.White);
                 circ = circ.FindAll(it => it.IsAlive);
                 var cnt = circ.Count;
+                Monitor.Enter(db);
+                db.bg.Graphics.Clear(Color.White);
                 for (int i = 0; i<cnt; i++)
                 {
-                    circ[i].Paint(bg.Graphics);
+                    circ[i].Paint(db.bg.Graphics);
                 }
-
                 try
                 {
-                    bg.Render(MainGraphics);
+                    db.bg.Render(MainGraphics);
                 } catch (Exception e) { }
+                Monitor.Exit(db);
 
                 Thread.Sleep(33);
             }
